@@ -1,4 +1,8 @@
 # riscv-rust
+This is forked from [takahirox/riscv-rust](https://github.com/takahirox/riscv-rust).
+
+<!--
+# riscv-rust
 
 [![Build Status](https://travis-ci.org/takahirox/riscv-rust.svg?branch=master)](https://travis-ci.org/takahirox/riscv-rust)
 [![Crate](https://img.shields.io/crates/v/riscv_emu_rust.svg)](https://crates.io/crates/riscv_emu_rust)
@@ -116,3 +120,4 @@ See [wasm/npm](https://github.com/takahirox/riscv-rust/tree/master/wasm/npm)
 - [CLINT, PLIC (SiFive E31 Manual)](https://sifive.cdn.prismic.io/sifive%2Fc89f6e5a-cf9e-44c3-a3db-04420702dcc1_sifive+e31+manual+v19.08.pdf)
 - [SiFive Interrupt Cookbook](https://sifive.cdn.prismic.io/sifive/0d163928-2128-42be-a75a-464df65e04e0_sifive-interrupt-cookbook.pdf)
 # riscv-rust
+-->
