@@ -5,6 +5,8 @@ const DRAM_BASE: u64 = 0x80000000;
 const DTB_SIZE: usize = 0xfe0;
 
 extern crate fnv;
+extern crate log;
+extern crate wasm_logger;
 
 use self::fnv::FnvHashMap;
 

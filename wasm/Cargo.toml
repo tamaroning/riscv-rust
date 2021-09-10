@@ -6,6 +6,8 @@ authors = ["Takahiro"]
 [dependencies]
 wasm-bindgen = "0.2.55"
 riscv_emu_rust = {path = "../"}
+log = "0.4.6"
+wasm-logger = "0.2.0"
 
 [lib]
 name = "riscv_emu_rust_wasm"

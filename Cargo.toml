@@ -21,3 +21,5 @@ travis-ci = { repository = "takahirox/riscv-rust" }
 
 [dependencies]
 fnv = "1.0.7"
+log = "0.4.6"
+wasm-logger = "0.2.0"

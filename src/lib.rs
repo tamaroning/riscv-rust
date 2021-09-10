@@ -3,6 +3,8 @@ const TEST_MEMORY_CAPACITY: u64 = 1024 * 512;
 const PROGRAM_MEMORY_CAPACITY: u64 = 1024 * 1024 * 128; // big enough to run Linux and xv6
 
 extern crate fnv;
+extern crate log;
+extern crate wasm_logger;
 
 use self::fnv::FnvHashMap;
 
@@ -130,6 +132,7 @@ impl Emulator {
 
 	/// Runs CPU one cycle
 	pub fn tick(&mut self) {
+		//log::info!("tick");
 		self.cpu.tick();
 	}
 

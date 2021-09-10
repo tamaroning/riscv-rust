@@ -1,5 +1,7 @@
 extern crate wasm_bindgen;
 extern crate riscv_emu_rust;
+extern crate log;
+extern crate wasm_logger;
 
 use wasm_bindgen::prelude::*;
 use std::collections::HashMap;
@@ -57,6 +59,8 @@ pub struct WasmRiscv {
 impl WasmRiscv {
 	/// Creates a new `WasmRiscv`.
 	pub fn new() -> Self {
+		wasm_logger::init(wasm_logger::Config::default());
+		log::info!("Creating emu now");
 		WasmRiscv {
 			emulator: Emulator::new(Box::new(DefaultTerminal::new()))
 		}
