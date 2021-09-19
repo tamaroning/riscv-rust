@@ -288,9 +288,6 @@ impl Cpu {
 
 	// @TODO: Rename?
 	fn tick_operate(&mut self) -> Result<(), Trap> {
-		// memo
-		self.is_next_call = false;
-
 		if self.wfi {
 			return Ok(());
 		}
@@ -318,6 +315,7 @@ impl Cpu {
 				
 				// memo
 				if self.is_next_call {
+					self.is_next_call = false;
 					self.call_count += 1;
 					//db
 					//log::info!("nest: {} cal: ra = 0x{:X}",self.call_count, self.x[1]);
@@ -1238,7 +1236,6 @@ impl Cpu {
 									// C.JALR
 									// jalr x1, 0(rs1)
 									// memo
-									self.is_next_call = true;
 									return (rs1 << 15) | (1 << 7) | 0x67;
 								}
 								if rs1 != 0 && rs2 != 0 {
@@ -2628,9 +2625,9 @@ const INSTRUCTIONS: [Instruction; INSTRUCTION_NUM] = [
 				cpu.call_count -= 1;
 			}
 
-			if f.rs1 == 0 {
+			/*if f.rs1 == 0 {
 				cpu.is_next_call = true;
-			}
+			}*/
 
 			// jalr ra, ra, offset equals to call
 			if f.rd == 1 && f.rs1 == 1 {
