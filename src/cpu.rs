@@ -1,5 +1,6 @@
 extern crate fnv;
-
+extern crate log;
+extern crate wasm_logger;
 use self::fnv::FnvHashMap;
 
 use mmu::{AddressingMode, Mmu};
@@ -73,7 +74,10 @@ pub struct Cpu {
 	is_reservation_set: bool,
 	_dump_flag: bool,
 	decode_cache: DecodeCache,
-	unsigned_data_mask: u64
+	unsigned_data_mask: u64,
+	call_count: isize,
+	ra_stack: Vec<i64>,
+	is_next_call: bool,
 }
 
 #[derive(Clone)]
@@ -223,7 +227,11 @@ impl Cpu {
 			is_reservation_set: false,
 			_dump_flag: false,
 			decode_cache: DecodeCache::new(),
-			unsigned_data_mask: 0xffffffffffffffff
+			unsigned_data_mask: 0xffffffffffffffff,
+			// this is newly added in order to count call stacks
+			call_count: 0,
+			ra_stack: Vec::new(),
+			is_next_call: false,
 		};
 		cpu.x[0xb] = 0x1020; // I don't know why but Linux boot seems to require this initialization
 		cpu.write_csr_raw(CSR_MISA_ADDRESS, 0x800000008014312f);
@@ -280,6 +288,9 @@ impl Cpu {
 
 	// @TODO: Rename?
 	fn tick_operate(&mut self) -> Result<(), Trap> {
+		// memo
+		self.is_next_call = false;
+
 		if self.wfi {
 			return Ok(());
 		}
@@ -304,6 +315,15 @@ impl Cpu {
 			Ok(inst) => {
 				let result = (inst.operation)(self, word, instruction_address);
 				self.x[0] = 0; // hardwired zero
+				
+				// memo
+				if self.is_next_call {
+					self.call_count += 1;
+					//db
+					//log::info!("nest: {} cal: ra = 0x{:X}",self.call_count, self.x[1]);
+					self.ra_stack.push(self.x[1].clone());
+				}
+
 				return result;
 			},
 			Err(()) => {
@@ -792,7 +812,7 @@ impl Cpu {
 	}
 
 	// @TODO: Optimize
-	fn uncompress(&self, halfword: u32) -> u32 {
+	fn uncompress(&mut self, halfword: u32) -> u32 {
 		let op = halfword & 0x3; // [1:0]
 		let funct3 = (halfword >> 13) & 0x7; // [15:13]
 
@@ -1217,6 +1237,8 @@ impl Cpu {
 								if rs1 != 0 && rs2 == 0 {
 									// C.JALR
 									// jalr x1, 0(rs1)
+									// memo
+									self.is_next_call = true;
 									return (rs1 << 15) | (1 << 7) | 0x67;
 								}
 								if rs1 != 0 && rs2 != 0 {
@@ -2569,6 +2591,12 @@ const INSTRUCTIONS: [Instruction; INSTRUCTION_NUM] = [
 			let f = parse_format_j(word);
 			cpu.x[f.rd] = cpu.sign_extend(cpu.pc as i64);
 			cpu.pc = address.wrapping_add(f.imm);
+			
+			// jal ra, offset equals to call
+			if f.rd == 1 {
+				cpu.is_next_call = true;
+			}
+			
 			Ok(())
 		},
 		disassemble: dump_format_j
@@ -2582,6 +2610,33 @@ const INSTRUCTIONS: [Instruction; INSTRUCTION_NUM] = [
 			let tmp = cpu.sign_extend(cpu.pc as i64);
 			cpu.pc = (cpu.x[f.rs1] as u64).wrapping_add(f.imm as u64);
 			cpu.x[f.rd] = tmp;
+
+			// jalr x0,x1,0 equlas to ret
+			if f.rd == 0 && f.rs1 == 1 && f.imm == 0 {
+				//db
+				//log::info!("nest: {} ret ra = 0x{:X}", cpu.call_count, cpu.pc);
+				
+				// likely to panic?
+				if let Some(expected_ra) = cpu.ra_stack.pop() {
+					if cpu.pc != expected_ra as u64 { 
+						log::error!("At nest {}", cpu.call_count);
+						log::error!("expected 0x{:X}", expected_ra);
+						log::error!("actual 0x{:X}", cpu.pc);
+						//panic!("err");
+					}
+				}
+				cpu.call_count -= 1;
+			}
+
+			if f.rs1 == 0 {
+				cpu.is_next_call = true;
+			}
+
+			// jalr ra, ra, offset equals to call
+			if f.rd == 1 && f.rs1 == 1 {
+				cpu.is_next_call = true;
+			}
+
 			Ok(())
 		},
 		disassemble: |cpu, word, _address, evaluate| {

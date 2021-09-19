@@ -132,7 +132,6 @@ impl Emulator {
 
 	/// Runs CPU one cycle
 	pub fn tick(&mut self) {
-		//log::info!("tick");
 		self.cpu.tick();
 	}
 

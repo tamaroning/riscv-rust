@@ -60,7 +60,7 @@ impl WasmRiscv {
 	/// Creates a new `WasmRiscv`.
 	pub fn new() -> Self {
 		wasm_logger::init(wasm_logger::Config::default());
-		log::info!("Creating emu now");
+		log::info!("Creating emu now!");
 		WasmRiscv {
 			emulator: Emulator::new(Box::new(DefaultTerminal::new()))
 		}
