@@ -1,6 +1,6 @@
 /// DRAM base address. Offset from this base address
 /// is the address in main memory.
-const DRAM_BASE: u64 = 0x80000000;
+pub const DRAM_BASE: u64 = 0x00001000;
 
 const DTB_SIZE: usize = 0xfe0;
 
@@ -273,7 +273,7 @@ impl Mmu {
 	/// # Arguments
 	/// * `v_address` Virtual address
 	/// * `width` Must be 1, 2, 4, or 8
-	fn load_bytes(&mut self, v_address: u64, width: u64) -> Result<u64, Trap> {
+	pub fn load_bytes(&mut self, v_address: u64, width: u64) -> Result<u64, Trap> {
 		debug_assert!(width == 1 || width == 2 || width == 4 || width == 8,
 			"Width must be 1, 2, 4, or 8. {:X}", width);
 		match (v_address & 0xfff) <= (0x1000 - width) {
@@ -371,7 +371,7 @@ impl Mmu {
 	/// * `v_address` Virtual address
 	/// * `value` data written
 	/// * `width` Must be 1, 2, 4, or 8
-	fn store_bytes(&mut self, v_address: u64, value: u64, width: u64) -> Result<(), Trap> {
+	pub fn store_bytes(&mut self, v_address: u64, value: u64, width: u64) -> Result<(), Trap> {
 		debug_assert!(width == 1 || width == 2 || width == 4 || width == 8,
 			"Width must be 1, 2, 4, or 8. {:X}", width);
 		match (v_address & 0xfff) <= (0x1000 - width) {

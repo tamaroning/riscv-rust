@@ -65,11 +65,11 @@ pub struct Cpu {
 	wfi: bool,
 	// using only lower 32bits of x, pc, and csr registers
 	// for 32-bit mode
-	x: [i64; 32],
+	pub x: [i64; 32],
 	f: [f64; 32],
-	pc: u64,
+	pub pc: u64,
 	csr: [u64; CSR_CAPACITY],
-	mmu: Mmu,
+	pub mmu: Mmu,
 	reservation: u64, // @TODO: Should support multiple address reservations
 	is_reservation_set: bool,
 	_dump_flag: bool,
@@ -307,7 +307,7 @@ impl Cpu {
 				self.uncompress(original_word & 0xffff)
 			}
 		};
-
+		//println!("uncompressed instruction: 0x{:08x}", word);
 		match self.decode(word) {
 			Ok(inst) => {
 				let result = (inst.operation)(self, word, instruction_address);
@@ -2591,6 +2591,7 @@ const INSTRUCTIONS: [Instruction; INSTRUCTION_NUM] = [
 			
 			// jal ra, offset equals to call
 			if f.rd == 1 {
+				println!("call 0x{:X}, set 0x{:08X} to ra", cpu.pc, cpu.x[1]);
 				cpu.is_next_call = true;
 			}
 			
@@ -2610,16 +2611,14 @@ const INSTRUCTIONS: [Instruction; INSTRUCTION_NUM] = [
 
 			// jalr x0,x1,0 equlas to ret
 			if f.rd == 0 && f.rs1 == 1 && f.imm == 0 {
-				//db
-				//log::info!("nest: {} ret ra = 0x{:X}", cpu.call_count, cpu.pc);
-				
-				// likely to panic?
+				println!("return to 0x{:X}", cpu.pc);
+				// shstack check
 				if let Some(expected_ra) = cpu.ra_stack.pop() {
 					if cpu.pc != expected_ra as u64 { 
-						log::error!("At nest {}", cpu.call_count);
-						log::error!("expected 0x{:X}", expected_ra);
-						log::error!("actual 0x{:X}", cpu.pc);
-						//panic!("err");
+						println!("\n--- Shadow stack interruption ---");
+						println!("expected 0x{:X}", expected_ra);
+						println!("error: actual 0x{:X}", cpu.pc);
+						println!("--------------------------------------");
 					}
 				}
 				cpu.call_count -= 1;
@@ -2631,6 +2630,7 @@ const INSTRUCTIONS: [Instruction; INSTRUCTION_NUM] = [
 
 			// jalr ra, ra, offset equals to call
 			if f.rd == 1 && f.rs1 == 1 {
+				println!("call 0x{:X}, set 0x{:08X} to ra", cpu.pc, cpu.x[1]);
 				cpu.is_next_call = true;
 			}
 
