@@ -307,7 +307,7 @@ impl Cpu {
 				self.uncompress(original_word & 0xffff)
 			}
 		};
-		//println!("uncompressed instruction: 0x{:08x}", word);
+
 		match self.decode(word) {
 			Ok(inst) => {
 				let result = (inst.operation)(self, word, instruction_address);
@@ -2623,10 +2623,6 @@ const INSTRUCTIONS: [Instruction; INSTRUCTION_NUM] = [
 				}
 				cpu.call_count -= 1;
 			}
-
-			/*if f.rs1 == 0 {
-				cpu.is_next_call = true;
-			}*/
 
 			// jalr ra, ra, offset equals to call
 			if f.rd == 1 && f.rs1 == 1 {
