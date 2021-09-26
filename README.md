@@ -1,5 +1,6 @@
-# riscv-rust
-This is forked from [takahirox/riscv-rust](https://github.com/takahirox/riscv-rust).
+# riscv-shstack
+This is forked from [takahirox/riscv-rust](https://github.com/takahirox/riscv-rust).  
+I implemented a shadow stack on RISC-V emulator in reference to Intel CET Shadow Stack.  
 
 <!--
 # riscv-rust
